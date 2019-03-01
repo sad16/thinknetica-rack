@@ -1,6 +1,9 @@
 require_relative 'lib/time_format'
 
 class App
+  REQUEST_METHOD = 'GET'.freeze
+  TIME_PATH = '/time'.freeze
+
   def call(env)
     return not_found unless time_request?(env)
 
@@ -15,12 +18,8 @@ class App
 
   private
 
-  def not_found
-    [404, {}, []]
-  end
-
   def time_request?(env)
-    env['REQUEST_METHOD'] == 'GET' && env['PATH_INFO'] == '/time'
+    env['REQUEST_METHOD'] == REQUEST_METHOD && env['PATH_INFO'] == TIME_PATH
   end
 
   def time_format_options(env)
@@ -28,14 +27,23 @@ class App
   end
 
   def time_params(env)
-    URI::decode(env['QUERY_STRING']).split('&').map { |param| param.split('=') }.to_h
+    decode_query_string = URI::decode(env['QUERY_STRING'])
+    decode_query_string.split('&').map { |param| param.split('=') }.to_h
+  end
+
+  def not_found
+    response(status: 404)
   end
 
   def ok(body)
-    [200, { 'Content-Type' => ' text/plain' }, [body]]
+    response(status: 200, body: body)
   end
 
   def bad_request(body)
-    [400, { 'Content-Type' => ' text/plain' }, [body]]
+    response(status: 400, body: body)
+  end
+
+  def response(status:, headers: { 'Content-Type' => ' text/plain' }, body: nil)
+    [status, headers, [body]]
   end
 end
