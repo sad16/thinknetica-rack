@@ -1,23 +1,18 @@
 class TimeFormat
-  DATE_FORMAT_OPTIONS = {
+  FORMATS = {
     'year'   => "%Y",
     'month'  => "%m",
-    'day'    => "%d"
-  }.freeze
-
-  TIME_FORMAT_OPTIONS = {
+    'day'    => "%d",
     'hour'   => "%H",
     'minute' => "%M",
     'second' => "%S"
   }.freeze
 
-  FORMAT_OPTIONS = DATE_FORMAT_OPTIONS.merge(TIME_FORMAT_OPTIONS).freeze
-
-  def initialize(format_options)
-    @format_options = format_options || default_format_options
+  def initialize(formats)
+    @formats = formats || default_formats
   end
 
-  def to_s
+  def formatted_time
     return unless valid?
 
     Time.now.strftime(generate_format_string)
@@ -27,27 +22,17 @@ class TimeFormat
     error_formats.empty?
   end
 
-  def error_message
-    "Unknown time format [#{error_formats.join(',')}]"
+  def error_formats
+    @error_formats ||= @formats.reject { |format| FORMATS.include?(format) }
   end
 
   private
 
-  def default_format_options
-    FORMAT_OPTIONS.keys
+  def default_formats
+    FORMATS.keys
   end
 
   def generate_format_string
-    date = select_format_values(DATE_FORMAT_OPTIONS).join('-')
-    time = select_format_values(TIME_FORMAT_OPTIONS).join(':')
-    "#{date} #{time}".strip
-  end
-
-  def select_format_values(allowed_format_options)
-    @format_options.map { |option| allowed_format_options[option] }.compact
-  end
-
-  def error_formats
-    @error_formats ||= @format_options.select { |option| !FORMAT_OPTIONS.include?(option) }
+    @formats.map { |format| FORMATS[format] }.compact.join('-')
   end
 end
