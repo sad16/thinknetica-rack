@@ -2,11 +2,11 @@ require_relative 'lib/time_format'
 
 class App
   def call(env)
-    @request = Rack::Request.new(env)
+    request = Rack::Request.new(env)
 
-    return not_found unless @request.get? && @request.path == '/time'
+    return not_found unless request.get? && request.path == '/time'
 
-    time_format = TimeFormat.new(@request.params['format']&.split(','))
+    time_format = TimeFormat.new(request.params['format']&.split(','))
 
     if time_format.valid?
       ok(time_format.formatted_time)
